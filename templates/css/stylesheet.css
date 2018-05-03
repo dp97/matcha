@@ -1,0 +1,54 @@
+html {
+    height: 100%;
+    box-sizing: border-box;
+}
+body {
+    position: relative;
+    min-height: 100%;
+    padding-bottom: 70px;
+    margin: 0;
+}
+
+.button-block {
+    color: white;
+    background: rgb(202, 60, 60); /* this is a maroon */
+}
+
+.tags {
+    display: block;
+}
+.tag-field {
+    width: 100%;
+    overflow-x: scroll; /* Hide horizontal scrollbar */
+    overflow-y: hidden; /* Add vertical scrollbar */
+    display: flex;
+}
+#tag {
+    display: inline-block;
+    background: linear-gradient(to right, #ff758c, #ff7eb3);
+    border-radius: 5px;
+    padding: 5px;
+    margin: 1px;
+}
+
+.profile-container {
+    border: 2px solid #A19D98;
+    border-radius: 5px;
+}
+.profile-container-p {
+    text-align: center;
+}
+
+.notify-datetime {
+    font-size: 10px;
+    margin: 0;
+    text-align: right
+}
+.notify-link {
+    color: #f38ffe;
+    text-decoration: none;
+    font-weight: bold;
+}
+.notify-msg {
+    margin: 0;
+}
