@@ -81,6 +81,7 @@ class DBMan {
                         location VARCHAR(50),
                         status VARCHAR(20) NOT NULL DEFAULT 'offline',
                         conTime DATETIME,
+                        rating INT NOT NULL DEFAULT 0,
                         UNIQUE(id),
                         FOREIGN KEY (id) REFERENCES credentials(id)
                     )ENGINE=InnoDB;
@@ -185,6 +186,19 @@ class DBMan {
                 ";
             $pdo->exec($sql);
             
+            // Table for messaging
+            $sql = "
+                    CREATE TABLE IF NOT EXISTS messages
+                    (
+                        msg_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+                        msg VARCHAR(255) NOT NULL,
+                        receiver VARCHAR(50) NOT NULL,
+                        sender VARCHAR(50) NOT NULL,
+                        datetime DATETIME NOT NULL
+                    )ENGINE=InnoDB;
+                ";
+            $pdo->exec($sql);
+            
         } catch (PDOException $error) {
             $this->logger->error("Failed to connect to Database: " . $error->getMessage());
             return null;
@@ -258,6 +272,35 @@ class DBMan {
             return false;
         }
         return false;
+    }
+    
+    public function countVisitor($table, $sid) {
+        $sql = "
+                SELECT COUNT(*) AS count
+                FROM ". $table ."
+                WHERE id = :id
+            ;";
+        
+        $pdo = $this->getConn();
+        if ( $pdo != null) {
+            try {
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindValue(':id', $sid);
+                $stmt->execute();
+                $res = $stmt->fetch();
+                $stmt = null;
+                return $res['count'];
+            }
+            catch(PDOException $e) 
+            {
+                $this->logger->error("DBMan->countVisitors(): " . $e->getMessage());
+                return null;
+            }
+        } else {
+            $this->logger->error("DBMan->countVisitor(): pdo is null.");
+            return null;
+        }
+        return null;
     }
     
     // $sid is subjeced user and $uname is subjector
@@ -908,6 +951,30 @@ class DBMan {
     }
     
     /**
+     * Calculate fame rating based on visitors, likes, blocks and reports
+     * 
+     * @param   $db     database
+     * @param   $sid     id of user to be calculated on.
+     */
+    public function getFameRating($sid)
+    {
+        $visits = (int)$this->countVisitor('visitors', $sid);
+        $likes = (int)$this->countVisitor('likes', $sid);
+        $blocks = (int)$this->countVisitor('blocks', $sid);
+        $reports = (int)$this->countVisitor('reports', $sid);
+        
+        $total_points = $visits + (2 * $visits);
+        $user_points = $visits + (2 * $likes) - $block - $reports;
+        
+        $percents = ($user_points * 100) / $total_points;
+        
+        // Convert to base 10 percentage
+        $fr = ($percents * 10) / 100;
+        
+        return number_format($fr, 1, '.', '');
+    }
+    
+    /**
      * Fetch user data in relation with user that requests
      * 
      * @param   $count  how many to fetch
@@ -915,7 +982,7 @@ class DBMan {
     public function getUsersData($count, $uid, $uname) {
         $sql = "
                 SELECT DISTINCT
-                    credentials.id, credentials.uname, photos.photo
+                    credentials.id, credentials.uname, photos.photo, profiles.age
                 FROM
                     credentials
                 INNER JOIN
@@ -944,6 +1011,100 @@ class DBMan {
         } else {
             $this->logger->error("DBMan->getUsersData(): PDO is null.");
             return false;
+        }
+        return $result;
+    }
+    
+    /**
+     * Search and Fetch users that liked each other
+     * 
+     * @param   $uid     id of user
+     */
+    public function getUserConnections($uid, $uname) {
+        $sql = "
+                SELECT liker 
+                FROM likes 
+                WHERE id = :id 
+                AND liker IN (SELECT credentials.uname FROM credentials INNER JOIN likes WHERE credentials.id = likes.id)
+            ;";
+        
+        $pdo = $this->getConn();
+        if ( $pdo != null ) {
+            try {
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindValue(':id', $uid);
+                // $stmt->bindValue(':uname', $uname);
+                $stmt->execute();
+                $result = $stmt->fetchAll();
+                $stmt = null;
+            }
+            catch(PDOException $e)
+            {
+                $this->logger->error("DBMan->getUserConnections(): " . $e->getMessage());
+                return false;
+            }
+        } else {
+            $this->logger->error("DBMan->getUserConnections(): PDO is null.");
+            return false;
+        }
+        return $result;
+    }
+    
+    public function addMsg($sender, $receiver, $msg, $datetime) {
+        $sql = "
+                INSERT INTO messages(receiver, msg, sender, datetime)
+                VALUES (:receiver, :msg, :sender, :datetime);
+            ";
+        
+        $pdo = $this->getConn();
+        if ( $pdo != null ) {
+            try {
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindValue(':receiver', $receiver);
+                $stmt->bindValue(':msg', $msg);
+                $stmt->bindValue(':sender', $sender);
+                $stmt->bindValue(':datetime', $datetime);
+                $stmt->execute();
+                $stmt = null;
+            }
+            catch(PDOException $e)
+            {
+                $this->logger->error("DBMan->getUserRelatedByTag(): " . $e->getMessage());
+                return false;
+            }
+        } else {
+            $this->logger->error("DBMan->getUserRelatedByTag(): PDO is null.");
+            return false;
+        }
+        return true;
+    }
+    
+    public function getConversation($sender, $receiver, $from_msg_id = -1) {
+        $sql = "
+                SELECT msg_id, msg, datetime, sender
+                FROM messages
+                WHERE sender IN (:sender, :receiver) AND receiver IN (:sender, :receiver) AND msg_id > :id
+            ;";
+        
+        $pdo = $this->getConn();
+        if ( $pdo != null ) {
+            try {
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindValue(':receiver', $receiver);
+                $stmt->bindValue(':sender', $sender);
+                $stmt->bindValue(':id', $from_msg_id, PDO::PARAM_INT);
+                $stmt->execute();
+                $result = $stmt->fetchAll();
+                $stmt = null;
+            }
+            catch(PDOException $e)
+            {
+                $this->logger->error("DBMan->getConverstion(): " . $e->getMessage());
+                return null;
+            }
+        } else {
+            $this->logger->error("DBMan->getConverstion(): PDO is null.");
+            return null;
         }
         return $result;
     }

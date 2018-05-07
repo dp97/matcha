@@ -18,15 +18,15 @@ class VisitController
         $this->session = $session;
     }
     
-    public function visit($req, $res, $args) {
+    public function visit($req, $res, $args)
+    {
         $visitor_uname = $this->session->get('user')['uname'];
         $uid = $this->session->get('user')['id'];
         $sid = filter_var($args['id'], FILTER_SANITIZE_STRING);
         
-        $this->logger->info("visitttt");
-        // if ($sid === $uid) {
-        //     // return $res->withRedirect('/home', 301);
-        // }
+        if ($sid == $uid) {
+            return $res->withRedirect('/home', 301);
+        }
         
         $profile_info = $this->database->getAllFrom('profiles', 'id', $sid)[0];
         if ( ! $profile_info) {
@@ -41,6 +41,7 @@ class VisitController
         $profile_info = array_merge($profile_info, $this->database->get('lname', 'credentials', 'id', $sid)[0]);
         $profile_info['tags'] = $this->database->getUserLinkedTags($sid);
         $profile_info['profile_photo'] = $this->database->getPhotos($sid, 1)[0]['photo'];
+        $profile_info['rating'] = $this->database->getFameRating($sid);
         // buttons
         $ifILiked = $this->database->existsVisitor('likes', 'liker', $sid, $visitor_uname);
         $ifHeLiked = $this->database->existsVisitor('likes', 'liker', $uid, $profile_info['uname']);
@@ -74,7 +75,8 @@ class VisitController
             ]);
     }
     
-    public function action($req, $res, $args) {
+    public function action($req, $res, $args)
+    {
         $action = json_decode($req->getBody());
         
         // sid refers to visited user and uname refers to visitor username

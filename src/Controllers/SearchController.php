@@ -7,7 +7,8 @@ class SearchController {
     protected $view;
     protected $session;
     
-    public function __construct($database, $logger, $view, $session) {
+    public function __construct($database, $logger, $view, $session)
+    {
         $this->logger = $logger;
         $this->database = $database;
         $this->view = $view;
@@ -17,21 +18,32 @@ class SearchController {
     /**
      * On GET Request render the page.
      */
-    public function getView($req, $res, $args) {
-        $uid = $this->session->get('user')['id'];
-        $uname = $this->session->get('user')['uname'];
-        $suggestions = null;
-        
-        $profiles = $this->database->getUsersData(6, $uid, $uname);
-        
+    public function getView($req, $res, $args)
+    {
         return $this->view->render($res, 'search.php', [
                 'logout'    => true,
                 'settings'  => true,
+                'search'    => true,
                 'home'      => '/home',
-                'sgts'      => $suggestions,
-                'atags'     => $this->database->getTable('tags'),
-                'profiles'  => $profiles
+                'atags'     => $this->database->getTable('tags')
             ]);
+    }
+    
+    /**
+     * On GET return preview info about users from database
+     */
+    public function getUsersPreview($req, $res, $args)
+    {
+        $uid = $this->session->get('user')['id'];
+        $uname = $this->session->get('user')['uname'];
+        
+        $profiles = $this->database->getUsersData(10, $uid, $uname);
+        $end = count($profiles);
+        for ($i = 0; $i < $end; $i++) {
+            $profiles[$i]['rating'] = $this->database->getFameRating($profiles[$i]['id']);
+            $profiles[$i]['tags'] = $this->database->getUserLinkedTags($profiles[$i]['id']);
+        }
+        return $res->withJson($profiles, 200);
     }
     
     /**

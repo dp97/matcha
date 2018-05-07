@@ -19,6 +19,9 @@
             if (isset($search)) {
                 echo '<li class="pure-menu-item"><a href="/search" class="pure-menu-link">Search</a></li>';
             }
+            if (isset($chat)) {
+                echo '<li class="pure-menu-item"><a href="/chat" class="pure-menu-link">Chat</a></li>';
+            }
             ?>
         </ul>
     </div>

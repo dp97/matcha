@@ -1,3 +1,69 @@
+/*chat styles*/
+.chat-container {
+    letter-spacing: normal;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 15px;
+}
+.chat-left-container {
+    min-width: 200px;
+    max-width: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: auto;
+    border: 2px solid;
+}
+.chat-right-container {
+    min-width: 200px;
+    flex-grow: 2;
+    flex-shrink: 1;
+    flex-basis: auto;
+    border: 2px solid #29323c;
+    display: flex;
+    height: 400px;
+    flex-direction: column;
+}
+.message-container {
+    background: #3392bf;
+    margin: 5px;
+    border-radius: 13px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+.chatroom-selector {
+    border: 1px solid;
+    margin: 2px;
+    text-align: center;
+    cursor: pointer;
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+#display-message-container {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: 100%;
+}
+.chatroom-selector-text {
+    margin: 0;
+}
+#write-message-container {
+    align-self: flex-end;
+    width: 100%;
+    display: flex;
+    border-top: 1px solid;
+}
+.message-text {
+    color: white;
+    margin: 5px;
+}
+#message-input {
+    flex-grow: 1;
+    min-width: 100px;
+}
+#message-send {
+    float: right;
+}
+
 html {
     height: 100%;
     box-sizing: border-box;
@@ -24,19 +90,41 @@ body {
     display: flex;
 }
 #tag {
-    display: inline-block;
     background: linear-gradient(to right, #ff758c, #ff7eb3);
+    display: inline-block;
     border-radius: 5px;
     padding: 5px;
     margin: 1px;
+    cursor: pointer;
+}
+.selected-tag {
+    background: linear-gradient(to right, #31b907, #9dc64e);
+    color: white;
+    font-weight: bolder;
+}
+.normal-tag {
+    background: linear-gradient(to right, #ff758c, #ff7eb3);
+    color: black;
+    font-weight: normal;
 }
 
+#no-results {
+    text-align: center;
+    text-align: center;
+    color: darkgray;
+}
+h1 {
+    text-align: center;
+}
+.search-result {
+    justify-content: space-evenly;
+}
 .profile-container {
     border: 2px solid #A19D98;
     border-radius: 5px;
-}
-.profile-container-p {
-    text-align: center;
+    cursor: pointer;
+    width: 200px;
+    margin-bottom: 15px;
 }
 
 .notify-datetime {

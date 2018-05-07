@@ -63,4 +63,8 @@ $container['SearchController'] = function ($c) {
 $container['VisitController'] = function ($c) {
     return new VisitController($c->database, $c->view, $c->logger, $c->session);
 };
+
+$container['ChatController'] = function ($c) {
+    return new ChatController($c->view, $c->database, $c->session);
+};
 ?>

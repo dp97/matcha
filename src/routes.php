@@ -28,10 +28,19 @@ $app->group('', function () use ($app) {
     /**
      * Browse and Search Route
      */
+    $app->get('/api/preview/users', 'SearchController:getUsersPreview');
     $app->get('/search', 'SearchController:getView');
     
     $app->get('/user/{id}', 'VisitController:visit');
     $app->post('/user/{action}/{id}', 'VisitController:action');
+    
+    /**
+     * Chat Room Route
+     */
+    $app->get('/chat', 'ChatController:getView');
+    $app->get('/chat/get/conversation', 'ChatController:getConversation');
+    $app->get('/chat/get/newmsgs', 'ChatController:fetchNewMsgs');
+    $app->post('/chat/post/msg', 'ChatController:postMsg');
     
     /**
      * Get data from form  
@@ -60,7 +69,8 @@ $app->group('', function () use ($app) {
             'home'      => '/home',
             'logout'    => true,
             'data'      => $profile_info,
-            'search'    => true
+            'search'    => true,
+            'chat'      => true
             ]);
     });
     
@@ -92,7 +102,8 @@ $app->group('', function () use ($app) {
                 'logout'        => true,
                 'settings'      => true,
                 'search'        => true,
-                'profile_data'  => $profile_info
+                'profile_data'  => $profile_info,
+                'chat'          => true
             ]);
         return $response;
     });
@@ -103,6 +114,7 @@ $app->group('', function () use ($app) {
      */
     $app->get('/logout', function (Request $request, Response $response) {
         $this->database->update('profiles', $this->session->get('user')['id'], 'status', 'offline');
+        $this->session->delete('user');
         $this->session->destroy();
         $this->logger->info('User logged out.');
         

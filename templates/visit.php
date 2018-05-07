@@ -16,7 +16,8 @@
                 <div class="pure-u-1">
                     <div class="pure-g">
                         <div class="pure-u-1-2">
-                            <h1>Profile of <?= $profile_data['uname'] ?></h1>
+                            <h1>Profile of <?= strtoupper($profile_data['uname']) ?></h1>
+                            <span>Fame Rating: <b><?= $profile_data['rating'] ?></b>/10</span>
                         </div>
                         <div class="pure-u-1-2" style="align-self: center;">
                             <div class="pure-u-1">
